@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = ({ services, models }) => {
+module.exports = ({ services, models, log }) => {
   return {
     validateModelConfiguration: function (collection) {
       const warnings = []
@@ -11,6 +11,7 @@ module.exports = ({ services, models }) => {
         const { searchIndexName, transformEntry } = model
 
         if (searchIndexName && searchIndexName !== typeof 'string') {
+          log.warning(`searchIndexName in ${collection} must be a string`)
           warnings.push(`searchIndexName in ${collection} must be a string`)
         }
 
@@ -112,12 +113,11 @@ module.exports = ({ services, models }) => {
      * @return {Array<Object>} - Converted or mapped data
      */
     transformEntries: function (collection, entries) {
-      console.log('AJKAHSKJH')
+      console.log(entries)
+      this.validateModelConfiguration(collection)
       const model = models[collection].meilisearch || {}
       const { transformEntry } = model
-      console.log(typeof transformEntry)
       if (!transformEntry) {
-        console.log('bah alors')
         return entries
       }
       try {
@@ -125,9 +125,10 @@ module.exports = ({ services, models }) => {
           return entries.map(x => model.transformEntry(x))
         }
       } catch (e) {
-        console.warn('test')
+        console.warn(e)
         return entries
       }
+
       return entries
     },
   }
